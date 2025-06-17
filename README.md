@@ -52,6 +52,7 @@ Then the user can set the following two parameters to obtain the desired result 
 | SLICE\_INTERVAL  | The spacing between sections, with a default value of 10.0 meters |
 | SLICE\_THICKNESS | The data thickness of each section, with a default value of 0.3 meters (a value between 0.3 - 0.5m is recommended) |
 
+
 ```python
 SLICE_INTERVAL = input("Please enter section spacing (meters) (Default: 10): ").strip()  
 if not SLICE_INTERVAL:  
