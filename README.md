@@ -8,7 +8,7 @@ Laser 3D scanning technology is currently used in various engineering measuremen
 - Preprocess measurement data, including downsampling and smoothing.
 - Tunnel point cloud data trimming and section acquisition.
 - Comparison of tunnel measured section point cloud data with design curves.
-- Quantitative calculation of over/ under excavation of tunnel sections.
+- Quantitative calculation of over/under excavation of tunnel sections.
 - Generate visual results of the comparison.
 
 ## 3. Get started
@@ -51,8 +51,7 @@ Then the user can set the following two parameters to obtain the desired result 
 | ---------------- | ----------------------------------------------------------------- |
 | SLICE\_INTERVAL  | The spacing between sections, with a default value of 10.0 meters |
 | SLICE\_THICKNESS | The data thickness of each section, with a default value of 0.3 meters (a value between 0.3 - 0.5m is recommended) |
-
-
+##
 ```python
 SLICE_INTERVAL = input("Please enter section spacing (meters) (Default: 10): ").strip()  
 if not SLICE_INTERVAL:  
@@ -68,7 +67,7 @@ else:
 ```
 The `RMTSA` software has many adjustable parameters, such as voxel size. However, these parameters are complex to adjust. Inappropriate values may lead to poor results. It is recommended that users thoroughly understand their point cloud data and the software before making adjustments.
 ## 4.Example
-​Examples are provided in the  `Examples`  folder, and details are explained here:  [Examples](https://github.com/xurongqiao/ZjuMatrix/blob/main/doc/EXAMPLES.md).
+​Examples are provided in the  `Examples`  folder, and details are explained here:  [Examples](https://github.com/ChenJiayi1111/RMTSA/blob/main/EXAMPLES.md).
 ## 5.License
 RMTSA software is licensed under the [MIT License](https://github.com/ChenJiayi1111/RMTSA/blob/main/LICENSE.txt)
 
