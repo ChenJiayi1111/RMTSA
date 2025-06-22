@@ -1,7 +1,7 @@
 ﻿# RMTSA
 ## 1.Introduction
 
-Laser 3D scanning technology is currently used in various engineering measurements. Based on this technology, this article develops a software called `RMTSA`(Rapid Mountain Tunnel Section Analyzer) for obtaining mountain tunnel section data and conducting quantitative analysis of over/under excavation. The content includes automatic equidistant continuous cutting of tunnel point cloud data sections, comparison between tunnel section point cloud data and design drawings, and quantitative display of tunnel over/under excavation situations.
+Laser 3D scanning technology is currently used in various engineering measurements. Based on this technology, there is a software called `RMTSA`(Rapid Mountain Tunnel Section Analyzer) for obtaining mountain tunnel section data and conducting quantitative analysis of over/under excavation. The content includes automatic equidistant continuous cutting of tunnel point cloud data, comparison between tunnel section point cloud data and the design curve, and quantitative display of tunnel over/under excavation situations.
 
 ## 2.Main functions
 `RMTSA` is a tool for obtaining data of tunnel sections  and analyze the over/under excavation situations of the mountain tunnel sections. It mainly implements the following functions:
@@ -29,7 +29,7 @@ Among them, `Open3D` requires additional installation.
 pip install open3d
 ```
 ### 3.2 Preprocessing of measured point cloud data
-Before using `RMTSA`software, the measured point cloud data acquired through SLAM algorithms requires filtering to enhance its quality. Following the filtering process, point cloud data from internal construction equipment, ventilation ducts, and the ground within the tunnel are removed. This step ensures the acquisition of point cloud data specifically for the upper section of the mountain tunnel. The resulting point cloud data serves as the raw data to be processed within `RMTSA`, ultimately leading to the generation of results for the over/under excavation analysis of the tunnel sections.
+Before using `RMTSA`software, users need to ensure that before the actual measured point cloud data is imported into `RMTSA`, the data has undergone filtering processing. Moreover, elements such as internal construction equipment, ventilation ducts, and the ground within the tunnel should be removed from the data. The resulting point cloud data serves as the raw data to be processed within `RMTSA`, ultimately leading to the generation of results for the over/under excavation analysis of the tunnel sections.
 
 ### 3.3 Select files
 Firstly, `RMTSA` will instruct users simply need to import the measured tunnel point cloud data in `pcd` format and the tunnel section design data in `txt` format.
