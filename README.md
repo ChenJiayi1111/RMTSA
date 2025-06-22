@@ -7,9 +7,9 @@ Laser 3D scanning technology is currently used in various engineering measuremen
 `RMTSA` is a tool for obtaining data of tunnel sections  and analyze the over/under excavation situations of the mountain tunnel sections. It mainly implements the following functions:
 - Preprocess measurement data, including downsampling and smoothing.
 - Tunnel point cloud data trimming and section acquisition.
-- Comparison of tunnel measured section point cloud data with design curves.
+- Comparison of tunnel measured section point cloud data with the corresponding design curve.
 - Quantitative calculation of over/under excavation of tunnel sections.
-- Generate visual results of the comparison.
+- Generate visual results of the over/under excavation.
 
 ## 3. Get started
 ### 3.1 System requirements
@@ -29,7 +29,7 @@ Among them, `Open3D` requires additional installation.
 pip install open3d
 ```
 ### 3.2 Preprocessing of measured point cloud data
-Before using `RMTSA`software, users need to ensure that before the actual measured point cloud data is imported into `RMTSA`, the data has undergone filtering processing. Moreover, elements such as internal construction equipment, ventilation ducts, and the ground within the tunnel should be removed from the data. The resulting point cloud data serves as the raw data to be processed within `RMTSA`, ultimately leading to the generation of results for the over/under excavation analysis of the tunnel sections.
+Before using `RMTSA` software, users need to ensure that the actual measured point cloud data has undergone filtering processing. Moreover, elements such as internal construction equipment, ventilation ducts, and the ground within the tunnel should be removed from the data. The resulting point cloud data serves as the raw data to be processed within `RMTSA`, ultimately leading to the generation of results for the over/under excavation analysis of the tunnel sections.
 
 ### 3.3 Select files
 Firstly, `RMTSA` will instruct users simply need to import the measured tunnel point cloud data in `pcd` format and the tunnel section design data in `txt` format.
