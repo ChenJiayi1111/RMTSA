@@ -32,7 +32,7 @@ pip install open3d
 Before using `RMTSA` software, users need to ensure that the actual measured point cloud data has undergone filtering processing. Moreover, elements such as internal construction equipment, ventilation ducts, and the ground within the tunnel should be removed from the data. The resulting point cloud data serves as the raw data to be processed within `RMTSA`, ultimately leading to the generation of results for the over/under excavation analysis of the tunnel sections.
 
 ### 3.3 Select files
-Firstly, `RMTSA` will instruct users simply need to import the measured tunnel point cloud data in `pcd` format and the tunnel section design data in `txt` format.
+Firstly, `RMTSA` will instruct users to import the measured tunnel point cloud data in `pcd` format and the tunnel section design data in `txt` format.
 ```python  
 print("Please select design curve file")  
 DESIGN_CURVE_FILE = filedialog.askopenfilename(  
@@ -46,7 +46,7 @@ INPUT_FILE = filedialog.askopenfilename(
 )
 ```
 ### 3.4 Input basic parameters
-Then the user can set the following two parameters to obtain the desired result .
+Then the user can set the following two parameters to obtain the desired result.
 | Parameter        | Description                                                       |
 | ---------------- | ------------------------------------------------------------------|
 | SLICE\_INTERVAL  | The spacing between sections, with a default value of 10.0 meters |
