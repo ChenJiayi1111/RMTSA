@@ -50,7 +50,7 @@ def compute_principal_axis(pcd, label="Verify principal direction"):
 
     # Take the middle 80% area to exclude interference
     x_coords = points[:, 0]
-    q1, q3 = np.percentile(x_coords, [20, 80])
+    q1, q3 = np.percentile(x_coords, [10, 90])
     mask = (x_coords > q1) & (x_coords < q3)
     core_points = pcd.select_by_index(np.where(mask)[0])
 
