@@ -12,6 +12,18 @@ from tkinter import filedialog
 plt.rcParams['font.sans-serif'] = ['SimHei']  # For Windows system
 plt.rcParams['axes.unicode_minus'] = False
 
+# —— Global Aesthetic Settings: Fonts & Line Widths ——
+plt.rcParams.update({
+    'font.size': 22,           # Base font size (affects ticks, labels, etc.)
+    'axes.labelsize': 18,      # Axis label size
+    'axes.titlesize': 20,      # Title size
+    'xtick.labelsize': 16,     # X-axis tick labels
+    'ytick.labelsize': 16,     # Y-axis tick labels
+    'legend.fontsize': 16,     # Legend text size
+    'lines.linewidth': 2.5,    # Default line thickness
+})
+
+
 # ================== Parameter Configuration Area ==================
 VOXEL_SIZE = 0.05  # Downsampling granularity (0.05-0.3)
 MIN_POINTS = 2000  # Minimum number of points for valid section
@@ -300,8 +312,7 @@ def calculate_tangent_angles(curve):
 def find_an_points(curve, angle_step=10):
     """ Find feature points with specified angle increments """
     angles_deg = calculate_tangent_angles(curve)
-    target_angles = np.arange(-90, 90, angle_step)  # From -75 to 75 degrees, step 15
-
+    target_angles = np.arange(-80, 90, angle_step)  # From -80 to 90 degrees, step 10
     an_points = []
     for target_angle in target_angles:
         # Find the point closest to the target angle
@@ -363,6 +374,97 @@ def find_bn_point(an_point, line_coeffs, centroids, curve):
     return bn_point, distance
 
 
+def visualize_an_points(translated_curve1, mirrored_centroids, results, output_path, section_id):
+    """
+    Plot the design curve, measured points, and feature (AN) points with labels.
+    - Labels are displaced along the curve normal to avoid covering geometry.
+    - Angle text is the NEGATED value (per requirement); distance shown on next line.
+    - X/Y labels use explicit coordinate names; only distance unit note is shown in-figure.
+    - Z-order: design curve (bottom), measured points (above), feature stars/labels (top).
+    """
+    fig, ax = plt.subplots(figsize=(18, 10))
+
+    # --- Base layers (set z-order explicitly) ---
+    ax.plot(
+        translated_curve1.x, translated_curve1.y,
+        'b-', linewidth=4.5, label='Design curve', zorder=1  # bottom-most
+    )
+    ax.scatter(
+        mirrored_centroids[:, 0], mirrored_centroids[:, 1],
+        s=12, c='r', alpha=0.65, label='Measured data', zorder=3  # above the line
+    )
+
+    # --- Scale for label offset in data coordinates (adapts to scene size) ---
+    x_all = np.concatenate([translated_curve1.x, mirrored_centroids[:, 0]])
+    y_all = np.concatenate([translated_curve1.y, mirrored_centroids[:, 1]])
+    x_rng = float(np.max(x_all) - np.min(x_all))
+    y_rng = float(np.max(y_all) - np.min(y_all))
+    offset = 0.03 * max(x_rng, y_rng)  # 3% of scene size
+
+    # --- Feature points and labels (displace along normal) ---
+    for idx, res in enumerate(results):
+        x_an, y_an = res['an_point']
+        ax.scatter(
+            x_an, y_an,
+            s=220, c='lime', edgecolor='k', linewidths=1.8,
+            marker='*', zorder=6,  # on top of points and line
+            label='Feature points' if idx == 0 else None
+        )
+
+        # Normal direction from tangent angle theta: n = (-sinθ, cosθ)
+        theta = np.deg2rad(res['angle'])
+        nx, ny = -np.sin(theta), np.cos(theta)
+        x_lbl = x_an + nx * offset
+        y_lbl = y_an + ny * offset
+
+        # Stacked label: angle (negated) on first line, distance on second
+        ax.annotate(
+            f"{-res['angle']}°\n{res['distance']:.3f}",
+            xy=(x_an, y_an), textcoords='data', xytext=(x_lbl, y_lbl),
+            ha='center', va='bottom', fontsize=18, weight='bold',
+            bbox=dict(boxstyle='round,pad=0.25', fc='white', ec='black', lw=1.2, alpha=0.9),
+            zorder=7  # keep labels above all geometry
+        )
+
+    # --- Axes styling ---
+    ax.grid(alpha=0.35, linewidth=1.6)
+    ax.tick_params(axis='both', labelsize=22, width=1.6, length=8)
+
+    # Units note inside the axes (distance only)
+    ax.text(
+        0.99, 0.02, 'Distances: meters (m)',
+        transform=ax.transAxes, ha='right', va='bottom', fontsize=18,
+        bbox=dict(boxstyle='round,pad=0.25', fc='white', ec='gray', lw=1.0, alpha=0.8)
+    )
+
+    # Axis labels
+    ax.set_xlabel('Horizontal coordinate (m)', fontsize=22)
+    ax.set_ylabel('Vertical coordinate (m)', fontsize=22)
+
+    # Preserve geometry aspect (1:1 in data space)
+    ax.set_aspect('equal', adjustable='datalim')
+
+    # Leave extra headroom at the bottom for the inside legend
+    y_min, y_max = float(np.min(y_all)), float(np.max(y_all))
+    y_range = max(y_max - y_min, 1e-9)
+    ax.set_ylim(y_min - 0.18 * y_range, y_max)
+
+    # Legend inside, bottom-center
+    ax.legend(
+        loc='lower center', frameon=True, fontsize=24,
+        borderpad=0.6, handlelength=2.4, markerscale=1.8, labelspacing=1.0
+    )
+
+    # Save and close
+    filename = f"over_under_excavation_diagram_section_{section_id:04d}.png"
+    fig.savefig(os.path.join(output_path, filename), dpi=500, pad_inches=0.2)
+    plt.close(fig)
+
+    print(f"Results saved to {filename}")
+    return filename
+
+
+
 def output_results(results, output_path, section_id):
     """ Output results to text file """
     filename = f"over_under_excavation_section_{section_id:04d}.txt"
@@ -370,31 +472,10 @@ def output_results(results, output_path, section_id):
     with open(filepath, 'w') as f:
         f.write("PointID\tAngle\tDistance\n")
         for idx, res in enumerate(results):
-            f.write(f"{idx + 1}\t{res['angle']}\t{res['distance']:.6f}\n")
+            f.write(f"{idx + 1}\t{-res['angle']}\t{res['distance']:.6f}\n")
     print(f"Results saved to {filename}")
     return filename
 
-
-def visualize_an_points(translated_curve1, mirrored_centroids, results, output_path, section_id):
-    """ Annotate all AN points """
-    plt.figure(figsize=(15, 9))
-    plt.plot(translated_curve1.x, translated_curve1.y, 'b-', label='Design curve')
-    plt.scatter(mirrored_centroids[:, 0], mirrored_centroids[:, 1], s=1, c='r', alpha=0.5, label='Actual measurement data')
-
-    for idx, res in enumerate(results):
-        an = res['an_point']
-        plt.scatter(an[0], an[1], s=60, c='lime', edgecolor='k', marker='*', zorder=5, label='Data feature points' if idx == 0 else None)
-        plt.text(an[0], an[1] + 0.02, f"{res['angle']}°", ha='center', va='bottom', fontsize=8)
-
-    plt.title("Tunnel feature points visualization")
-    plt.legend(loc='upper right')
-    plt.grid(alpha=0.2)
-    filename = f"over_under_excavation_diagram_section_{section_id:04d}.png"
-    filepath = os.path.join(output_path, filename)
-    plt.savefig(filepath, dpi=300)
-    plt.close()
-    print(f"Results saved to {filename}")
-    return filename
 
 
 # ================== Main Program ==================
