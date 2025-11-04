@@ -7,6 +7,7 @@ from scipy.spatial import ConvexHull
 from scipy.interpolate import Akima1DInterpolator
 import tkinter as tk
 from tkinter import filedialog
+from textwrap import fill
 
 # Set global font to solve Chinese display issue
 plt.rcParams['font.sans-serif'] = ['SimHei']  # For Windows system
@@ -431,11 +432,9 @@ def visualize_an_points(translated_curve1, mirrored_centroids, results, output_p
     ax.tick_params(axis='both', labelsize=22, width=1.6, length=8)
 
     # Units note inside the axes (distance only)
-    ax.text(
-        0.99, 0.02, 'Distances: meters (m)',
-        transform=ax.transAxes, ha='right', va='bottom', fontsize=18,
-        bbox=dict(boxstyle='round,pad=0.25', fc='white', ec='gray', lw=1.0, alpha=0.8)
-    )
+    msg = fill("The units of over/under excavation are meters.", width=32)
+    ax.text(0.99, 0.02, msg, transform=ax.transAxes, ha='right', va='bottom',
+            fontsize=18, wrap=True, bbox=dict(boxstyle='round,pad=0.25', fc='white', ec='gray', lw=1.0, alpha=0.8))
 
     # Axis labels
     ax.set_xlabel('Horizontal coordinate (m)', fontsize=22)
