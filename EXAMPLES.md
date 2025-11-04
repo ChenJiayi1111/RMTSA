@@ -8,7 +8,7 @@ Two experimentally validated sample datasets, acquired from the Maoliling Tunnel
 ![Exampletwo](https://github.com/ChenJiayi1111/RMTSA/blob/main/imgs/example2.png)
 
 Due to the presence of ventilation ducts, electrical cables, and other components inside the tunnel, certain areas of point cloud data are missing. The following figure illustrates the locations of the missing data and the corresponding causes.
-### Locations and causes of point cloud data gaps in the tunnel
+## Locations and causes of point cloud data gaps in the tunnel
 ![Locations and causes of point cloud data gaps in the tunnel](https://github.com/ChenJiayi1111/RMTSA/blob/main/imgs/missingdataexplanation.png)
 
 # Results
