@@ -33,7 +33,6 @@ OUTPUT_DIR = "tunnel_sections"  # Output directory name
 # Suggested thresholds (cm) for different construction stages (shown to user at input time)
 # - Initial support: 0.05 m (5 cm)
 # - Secondary lining: 0.15 m (15 cm)
-# - For catching severe occlusion / missing-data outliers: 0.5 m (50 cm)
 SUGGEST_THRESHOLD_INITIAL_SUPPORT_CM = 30
 SUGGEST_THRESHOLD_SECONDARY_LINING_CM = 15
 
