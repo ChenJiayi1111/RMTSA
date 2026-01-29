@@ -17,3 +17,5 @@ Ultimately, the output results can be classified into three categories: over/und
 ![One of the results from Exampleone and the explanation](https://github.com/ChenJiayi1111/RMTSA/blob/main/imgs/result1.png)
 ## One of the results from Exampletwo and the explanation
 ![One of the results from Exampletwo and the explanation](https://github.com/ChenJiayi1111/RMTSA/blob/main/imgs/result2.png)
+## Notation for results
+Values shown in red indicate potential occlusion or missing data at that location and may not be meaningful for practical engineering interpretation. All over/under-excavation values in the figures are reported in centimeters (cm).
