@@ -30,6 +30,14 @@ VOXEL_SIZE = 0.05  # Downsampling granularity (0.05-0.3)
 MIN_POINTS = 2000  # Minimum number of points for valid section
 OUTPUT_DIR = "tunnel_sections"  # Output directory name
 
+# Suggested thresholds (cm) for different construction stages (shown to user at input time)
+# - Initial support: 0.05 m (5 cm)
+# - Secondary lining: 0.15 m (15 cm)
+# - For catching severe occlusion / missing-data outliers: 0.5 m (50 cm)
+SUGGEST_THRESHOLD_INITIAL_SUPPORT_CM = 30
+SUGGEST_THRESHOLD_SECONDARY_LINING_CM = 15
+
+
 
 # ================== File 2 Function Definitions ==================
 def load_point_cloud(file_path):
@@ -375,7 +383,7 @@ def find_bn_point(an_point, line_coeffs, centroids, curve):
     return bn_point, distance
 
 
-def visualize_an_points(translated_curve1, mirrored_centroids, results, output_path, section_id):
+def visualize_an_points(translated_curve1, mirrored_centroids, results, output_path, section_id, abnormal_threshold):
     """
     Plot the design curve, measured points, and feature (AN) points with labels.
     - Labels are displaced along the curve normal to avoid covering geometry.
@@ -418,12 +426,19 @@ def visualize_an_points(translated_curve1, mirrored_centroids, results, output_p
         x_lbl = x_an + nx * offset
         y_lbl = y_an + ny * offset
 
+        # Flag potentially invalid points (e.g., occlusion/missing data).
+        # Use absolute value so both extreme over-excavation (+) and under-excavation (-)
+        # can be highlighted.
+        is_abnormal = abs(res['distance']) > float(abnormal_threshold)
+        txt_color = 'red' if is_abnormal else 'black'
+        box_ec = 'red' if is_abnormal else 'black'
+
         # Stacked label: angle (negated) on first line, distance on second
         ax.annotate(
-            f"{-res['angle']}°\n{res['distance']:.3f}",
+            f"{-res['angle']}°\n{res['distance']:.2f}",
             xy=(x_an, y_an), textcoords='data', xytext=(x_lbl, y_lbl),
-            ha='center', va='bottom', fontsize=18, weight='bold',
-            bbox=dict(boxstyle='round,pad=0.25', fc='white', ec='black', lw=1.2, alpha=0.9),
+            ha='center', va='bottom', fontsize=18, weight='bold', color=txt_color,
+            bbox=dict(boxstyle='round,pad=0.25', fc='white', ec=box_ec, lw=1.2, alpha=0.9),
             zorder=7  # keep labels above all geometry
         )
 
@@ -432,8 +447,12 @@ def visualize_an_points(translated_curve1, mirrored_centroids, results, output_p
     ax.tick_params(axis='both', labelsize=22, width=1.6, length=8)
 
     # Units note inside the axes (distance only)
-    msg = fill("The units of over/under excavation are meters.", width=32)
-    ax.text(0.99, 0.02, msg, transform=ax.transAxes, ha='right', va='bottom',
+    msg = fill("The units of over/under excavation are centimeters (cm).", width=42)
+    warn_msg = fill("Values in red color indicate potential occlusion/missing data.", width=44)
+    ax.text(0.01, 0.02, warn_msg, transform=ax.transAxes, ha='left', va='bottom',
+            fontsize=18, wrap=True, bbox=dict(boxstyle='round,pad=0.25', fc='white', ec='gray', lw=1.0, alpha=0.8))
+
+    ax.text(0.65, 0.02, msg, transform=ax.transAxes, ha='left', va='bottom',
             fontsize=18, wrap=True, bbox=dict(boxstyle='round,pad=0.25', fc='white', ec='gray', lw=1.0, alpha=0.8))
 
     # Axis labels
@@ -464,14 +483,16 @@ def visualize_an_points(translated_curve1, mirrored_centroids, results, output_p
 
 
 
-def output_results(results, output_path, section_id):
+def output_results(results, output_path, section_id, abnormal_threshold):
     """ Output results to text file """
     filename = f"over_under_excavation_section_{section_id:04d}.txt"
     filepath = os.path.join(output_path, filename)
     with open(filepath, 'w') as f:
-        f.write("PointID\tAngle\tDistance\n")
+        # Keep the file ASCII/English-friendly for cross-platform readability.
+        f.write("PointID\tAngle(deg)\tDistance(cm)\tAbnormal(1/0)\n")
         for idx, res in enumerate(results):
-            f.write(f"{idx + 1}\t{-res['angle']}\t{res['distance']:.6f}\n")
+            abnormal = 1 if abs(res['distance']) > float(abnormal_threshold) else 0
+            f.write(f"{idx + 1}\t{-res['angle']}\t{res['distance']:.2f}\t{abnormal}\n")
     print(f"Results saved to {filename}")
     return filename
 
@@ -518,6 +539,28 @@ if __name__ == "__main__":
         SLICE_THICKNESS = 0.3
     else:
         SLICE_THICKNESS = float(SLICE_THICKNESS)
+
+    # Abnormal over/under excavation threshold (no default; user must input).
+    # Practical suggestions (cm):
+    #   - Initial support: 30 cm
+    #   - Secondary lining: 15 cm
+    #   - For catching severe occlusion/missing-data outliers: 50 cm
+    print("\nAbnormal excavation threshold suggestions (cm):")
+    print(f"  Initial support: {SUGGEST_THRESHOLD_INITIAL_SUPPORT_CM:.0f} (cm)")
+    print(f"  Secondary lining: {SUGGEST_THRESHOLD_SECONDARY_LINING_CM:.0f} (cm)")
+    print("  Note: Please set the threshold based on the construction stage and project requirements.")
+    print("  Values exceeding the threshold may indicate missing data in that angular range (e.g., due to occlusions).")
+
+
+    while True:
+        _thr = input("Please enter abnormal excavation threshold (cm), e.g., 15 / 30: ").strip()
+        try:
+            ABNORMAL_THRESHOLD = float(_thr)
+            if ABNORMAL_THRESHOLD <= 0:
+                raise ValueError("Threshold must be > 0")
+            break
+        except Exception:
+            print("Invalid input. Please enter a positive number in centimeters (e.g., 15).")
 
     raw_pcd = None
     curve1 = None
@@ -603,9 +646,10 @@ if __name__ == "__main__":
             for an in an_points:
                 line_coeffs = calculate_normal_line(an, translated_curve1)
                 bn_point, distance = find_bn_point(an, line_coeffs, mirrored_centroids, translated_curve1)
+                distance_cm = float(distance) * 100.0
                 results.append({
                     'angle': an['angle'],
-                    'distance': distance,
+                    'distance': distance_cm,
                     'an_point': an['point'],
                     'bn_point': bn_point
                 })
@@ -614,10 +658,10 @@ if __name__ == "__main__":
             results.sort(key=lambda x: -x['angle'])
 
             # Output results file
-            dist_filename = output_results(results, output_path, section_id)
+            dist_filename = output_results(results, output_path, section_id, abnormal_threshold=ABNORMAL_THRESHOLD)
 
             # Annotate AN points
-            an_filename = visualize_an_points(translated_curve1, mirrored_centroids, results, output_path, section_id)
+            an_filename = visualize_an_points(translated_curve1, mirrored_centroids, results, output_path, section_id, abnormal_threshold=ABNORMAL_THRESHOLD)
 
             # Record metadata
             metadata.append({
