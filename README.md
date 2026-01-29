@@ -51,6 +51,7 @@ Then the user can set the following two parameters to obtain the desired result.
 | ---------------- | ------------------------------------------------------------------|
 | SLICE\_INTERVAL  | The spacing between sections, with a default value of 10.0 meters |
 | SLICE\_THICKNESS | The data thickness of each section, with a default value of 0.3 meters (a value between 0.3 - 0.5m is recommended) |
+| ABNORMAL_THRESHOLD  | Boundary for flagging abnormal over/under-excavation values, which may indicate occlusion or missing data. Unit: centimeter (cm) |
 ##
 ```python
 SLICE_INTERVAL = input("Please enter section spacing (meters) (Default: 10): ").strip()  
@@ -65,7 +66,7 @@ if not SLICE_THICKNESS:
 else:  
     SLICE_THICKNESS = float(SLICE_THICKNESS)
 ```
-The `RMTSA` software has many adjustable parameters, such as voxel size. However, these parameters are complex to adjust. Inappropriate values may lead to poor results. It is recommended that users thoroughly understand their point cloud data and the software before making adjustments.
+The `RMTSA` software has many adjustable parameters, such as voxel size. However, these parameters are complex to adjust. Inappropriate values may lead to poor results. It is recommended that users thoroughly understand their point cloud data and the software before making adjustments. To adjust the abnormal threshold, users should calibrate it based on the on-site construction conditions and the construction stage (e.g., initial support or secondary lining).
 ## 4.Example
 ​Examples are provided in the  `Examples`  folder, and details are explained here:  [Examples](https://github.com/ChenJiayi1111/RMTSA/blob/main/EXAMPLES.md).
 ## 5.License
